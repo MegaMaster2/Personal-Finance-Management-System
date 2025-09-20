@@ -1,22 +1,41 @@
 from flask import Blueprint, request, jsonify
-from db_instance import db    # <- import db from separate module
+from db_instance import db
 from models import User
-from flask_bcrypt import Bcrypt
 
 auth_bp = Blueprint("auth", __name__)
-bcrypt = Bcrypt()
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
+    # ... your existing register code ...
     data = request.get_json()
-    email = data["email"]
-    name = data["name"]
-    password = data["password"]
+    email = data.get("email")
+    name = data.get("name")
+    password = data.get("password")
 
-    hashed = bcrypt.generate_password_hash(password).decode("utf-8")
-    user = User(email=email, name=name, password_hash=hashed)
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Email already registered"}), 409
 
-    db.session.add(user)
+    new_user = User(email=email, name=name)
+    new_user.set_password(password)
+
+    db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": "User registered successfully"}), 201
+    return jsonify({"message": "User registered successfully", "user_id": new_user.id}), 201
+
+# --- MAKE SURE THIS ENTIRE FUNCTION EXISTS ---
+@auth_bp.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    user = User.query.filter_by(email=email).first()
+
+    if user and user.check_password(password):
+        return jsonify({
+            "message": "Login successful",
+            "user_id": user.id
+        }), 200
+
+    return jsonify({"error": "Invalid email or password"}), 401

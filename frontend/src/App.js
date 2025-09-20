@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import UserSelector from './components/UserSelector';
+import Register from './components/Register'; // <-- Make sure this is your register component
+import Login from './components/Login';       // <-- Add this line to import the new component
 import Dashboard from './components/Dashboard';
 import './App.css';
 
@@ -10,9 +11,10 @@ function App() {
       <div className="container">
         <h1>Personal Finance Manager</h1>
         <Routes>
-          <Route path="/" element={<UserSelector />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} /> {/* <-- Add this line for the login route */}
           <Route path="/dashboard/:userId" element={<Dashboard />} />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/" element={<Navigate to="/register" />} />
         </Routes>
       </div>
     </Router>
